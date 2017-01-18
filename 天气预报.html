@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="md1">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta http-equiv=“X-UA-Compitable” content=“IE=edge”>
+
+    <title></title>
+    <!--css hack 补丁文件-->
+    <!--[if lt IE 9]>
+
+    <![endif]-->
+</head>
+<body >
+<select name="" id="pre"  >
+    <option value="">请选择省</option>
+</select>
+<select name="" id="city" >
+    <option value="">请选择市</option>
+</select>
+<select name="" id="diqu">
+    <option value="">请选择区</option>
+</select>
+<input type="button" name="" id="btn" value="查询" />
+
+
+<script src="js/jquery-1.11.3.js"></script>
+<script src="js/china.js"></script>
+<script>
+    var pre=$("#pre");
+    var city=$("#city");
+    var diqu=$("#diqu");
+    for(var i=0;i<chinaAreaMap.length;i++){
+        var op1=$("<option></option>");
+        op1.html(chinaAreaMap[i][0]);
+        op1.appendTo(pre);
+    }
+    pre.change(function(){
+        while(city.children().length>1){
+            city.children().last().remove();
+        }
+        for(var i=0;i<chinaAreaMap.length;i++){
+            if(this.value==chinaAreaMap[i][0]){
+                for(var j=0;j<chinaAreaMap[i][2].length;j++){
+                    var op2=$("<option></option>");
+                    op2.html(chinaAreaMap[i][2][j][0]);
+                    op2.appendTo(city);
+                }
+            }
+        }
+    })
+    city.change(function(){
+        while(diqu.children().length>1){
+            diqu.children().last().remove();
+        }
+        for(var i=0;i<chinaAreaMap.length;i++){
+            for(var j=0;j<chinaAreaMap[i][2].length;j++){
+                if(this.value==chinaAreaMap[i][2][j][0]){
+                    for(var n=0;n<chinaAreaMap[i][2][j][2].length;n++){
+                        var op3=$("<option></option>");
+                        op3.html(chinaAreaMap[i][2][j][2][n][0]);
+                        op3.attr("value",chinaAreaMap[i][2][j][2][n][1]);
+                        op3.appendTo(diqu);
+                    }
+                }
+            }
+        }
+    })
+    $("#btn").click(function(){
+        $('body>div').remove();
+        var num=diqu.val();
+        $.ajax({
+            type:'get',
+            url:'https://qweather.ssl.qhimg.com/sed_api_weather_info.php?code=101'+num+'&_jsonp=?',
+            dataType:'jsonp',
+            success:function(data){
+                console.log(data);
+                var div=$('<div></div>');
+                var day=data.weather[0].info.day;
+                var n=data.weather[0].info.night;
+                var d=data.weather[0].date;
+                div.html("<br/>本地区"+d+"天气情况:<br/>最低： 气温:"+n[2]+"°C 天气:"+day[1]+"<img src='https://p1.ssl.qhimg.com/d/_hao360/weather/"
+                        +day[0]+".png'>"+"最高： 气温:"+day[2]+"°C 天气:"+n[1]+"<img src='https://p1.ssl.qhimg.com/d/_hao360/weather/"
+                +n[0]+".png'>");
+                $('body').append(div);
+            }
+        })
+    })
+</script>
+</body>
+</html>
